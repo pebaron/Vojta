@@ -350,103 +350,50 @@ Int_t nominal::Cut(Long64_t entry)
 
 void nominal::Loop()
 {
-//   In a ROOT session, you can do:
-//      Root > .L nominal.C
-//      Root > nominal t
-//      Root > t.GetEntry(12); // Fill t data members with entry number 12
-//      Root > t.Show();       // Show values of entry 12
-//      Root > t.Show(16);     // Read and show values of entry 16
-//      Root > t.Loop();       // Loop on all entries
-//
-
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
 
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
 
+      //zde vytvarime promene
+
+
    TFile *outfile = new TFile("outVojta.root", "recreate");
-   TH1D *h1 = new TH1D("h1", "Mass; Energy [Gev]; Events", 100, 0, 200);
-//   TH2D *h2 = new TH2D("Phi - Eta", "Eta [x] - Phi[y] diagram of large jets; #eta; #phi; Events", 20, -3, 3, 20, -3.5, 3.5);
-   TH1D *h2 = new TH1D("h2", "LMass; [Gev]; Events", 100, 0, 250);
- //  TH1D *h3 = new TH1D("h3", "Pt distribution of large jets;Pt [Gev];Events", 100, 100, 1400);
-   TH1D *h3 = new TH1D("h3", "LMass, cut pt_Large > 100 GeV - Red, 250 GeV - Blue, 450 GeV - Black; [Gev]; Events", 100, 0, 250);
- //  TH1D *h4 = new TH1D("h4", "Distribution of large jets;Events;Number of Large jets", 25, 0, 6);
-   TH1D *h4 = new TH1D("h4", "LMass cut pt_Large > 250 GeV; [Gev]; Events", 100, 0, 250);
-//   TH1D *h5 = new TH1D("h5", "Energy distribution of jets; Energy [Gev]; Events", 100, 0, 4000);
-   TH1D *h5 = new TH1D("h5", "LMass cut pt_Large > 450 GeV; [Gev]; Events", 100, 0, 250);
-//   TH2D *h6 = new TH2D("h6", "Eta [x] - Phi[y] diagram of jets; #eta; #phi; Events", 20, -3, 3, 20, -3.5, 3.5);
-   TH2D *h6 = new TH2D("h6", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);	
-   TH1D *h7 = new TH1D("h7", "Pt distribution of jets;Pt [Gev];Events", 100, 0, 1400);
-   TH1D *h8 = new TH1D("h8", "Distribution of jets;Events;Number of jets", 25, 0, 6);
-   TH1D *h9 = new TH1D("h9", "Delta phi for pt > 500 Gev;Delta phi;Number of jets", 80, 0, 6.5);
-   TH2D *h10 = new TH2D("h10", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
-   TH2D *h11 = new TH2D("h11", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
-   TH2D *h12 = new TH2D("h12", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
-   TH2D *h13 = new TH2D("h13", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);  
-   TH2D *h14 = new TH2D("h14", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
-   TH2D *h15 = new TH2D("h15", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
-   TH2D *h16 = new TH2D("h16", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
-   TH2D *h17 = new TH2D("h17", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);  
-   TH2D *h18 = new TH2D("h18", "LMass[x] - Tau32[y] diagram of jets; LMass; Tau32; Events", 100, 0, 250, 20, 0, 1.2);
 
    TH1D *h_mu_charge = new TH1D("h_mu_charge", "Charge of muons;charge;Events", 6, -3, 3);
-
+   TH1D *h_mu_pt = new TH1D("h_mu_pt", "Muon p_{T};Muon pt [GeV];Events", 100, 0, 1000);
+   TH1D *h_el_pt = new TH1D("h_el_pt", "Electron p_{T};Electron pt [GeV];Events", 100, 0, 1000);
    Long64_t nbytes = 0, nb = 0;
-   float mass = 0.,energy = 0, pt = 0, nu = 0, lmass =0., lenergy = 0, lpt=0,lnu=0;
-      for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
+   
+          // zacatek cyklu pres eventy
+
+       for (Long64_t jentry=0; jentry<nentries;jentry++) {
+             Long64_t ientry = LoadTree(jentry);
+             if (ientry < 0) break;
+             nb = fChain->GetEntry(jentry);   nbytes += nb;
 	if (jentry % 10000 == 0) 
   		cout << "processing entry " << jentry << endl;
-      //cyklus pro vojtu
-      
-      for (unsigned int i=0; i < mu_charge->size();i++) {
-              h_mu_charge->Fill((*mu_charge)[i]);
         
-              //cout << (*mu_charge)[i] << endl;
-              cout << mu_charge->size() << endl;
+              h_mu_charge->Fill((*mu_charge)[0]);
+              cout << "test" << endl;
+              h_mu_pt->Fill((*mu_pt)[0]/1000);
+              if (el_pt->size() > 0){
+                //cout << (*el_pt) << endl;
+                h_el_pt->Fill((*el_pt)[0]/1000);
               }
+              
+              
+              cout << "test" << endl;
+              //cout << (*mu_charge)[i] << endl;
+              //cout << "Mu pt 0" << (*mu_pt)[0]/1000 << endl;
+              //cout << "--------------" << endl;
       // konec cyklu pres udalosti
-  			 	
-      }
-   h_mu_charge->Draw();
+                }	
+        h_mu_pt->SetLineColor(2);
+        h_mu_pt->SetLineStyle(2);
+        h_mu_pt->Draw("hist e2");   
+        h_el_pt->Draw("hist e2 same");   
+   //h_mu_charge->Draw("hist e1");
    outfile->Write();
-//	TCanvas *can=new TCanvas("Histograms","Results",0,0,1800,1800);
-//	can->Divide(3,3);
-//	can-> cd(1);
-//	gPad-> SetLogy(1);
-//	h1->Draw();
-//	can-> cd(2);
-	//h2->Draw("lego2");
-//	h2->Draw();
-//	can-> cd(3);
-//	h3->Draw();
-//	can-> cd(4);
-    //   	h4->Draw();
-  //    	can-> cd(5);		//	gPad-> SetLogy(1);
-//	h5->Draw();
-//	can-> cd(6);
-//	h6->Draw("lego2");
-//	can-> cd(7);
-//	h7->Draw();
-//	can-> cd(8);//8
-//	h8->Draw();
-   //     can-> cd(9);//9
- //       h9->Draw();	
-//	can -> Print("Test.png");
+
 }
